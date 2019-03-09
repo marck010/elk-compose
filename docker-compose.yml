@@ -1,26 +1,56 @@
 version: "2"
 services:
   elasticsearch:
-    image: elasticsearch:2.3.3
-    command: elasticsearch -Des.network.host=0.0.0.0
+    image: elasticsearch:6.6.1
+    environment: 
+      - discovery.type=single-node
   kibana:
-    image: kibana:4.5.1
+    image: kibana:6.6.1
     ports:
       - "5601:5601"
     depends_on:
       - elasticsearch
   logstash:
-    image: logstash:2.3.2
+    image: logstash:6.6.1
     command: logstash -f /etc/logstash/conf.d/logstash.conf
     volumes:
       - ./logstash:/etc/logstash/conf.d
       - ./logstash/patterns:/opt/logstash/patterns
+    ports:
+      - "5044:5044"
     depends_on:
       - elasticsearch
   filebeat:
     image: prima/filebeat
     volumes:
       - ./filebeat/filebeat.yml:/filebeat.yml
-      - ../fake-logs:/var/log
+      - /var/lib/docker/containers:/opt/containers/
     depends_on:
       - logstash
+
+  
+# version: "2"
+# services:
+#   elasticsearch:
+#     image: elasticsearch:5.6.15-alpine
+#   kibana:
+#     image: kibana:6.6.1
+#     ports:
+#       - "5601:5601"
+#     depends_on:
+#       - elasticsearch
+#   logstash:
+#     image: logstash:5.6.15-alpine
+#     command: logstash -f /etc/logstash/conf.d/logstash.conf
+#     volumes:
+#       - ./logstash:/etc/logstash/conf.d
+#       - ./logstash/patterns:/opt/logstash/patterns
+#     depends_on:
+#       - elasticsearch
+#   filebeat:
+#     image: prima/filebeat
+#     volumes:
+#       - ./filebeat/filebeat.yml:/filebeat.yml
+#       - /var/lib/docker/containers:/opt/containers/
+#     depends_on:
+#       - logstash
